@@ -29,9 +29,11 @@ input_array = np.array([[hour, windspeed, winddir, solar, airtemp]])
 # --- Main Title ---
 st.title("🌆 Urban Microclimate Predictor")
 st.markdown("This tool uses trained ML models to predict high-resolution spatial fields for:")
-st.markdown("- **MRT** (Mean Radiant Temperature)  
+st.markdown("""
+- **MRT** (Mean Radiant Temperature)  
 - **MagVel** (Velocity Magnitude)  
-- **AT** (Air Temperature)")
+- **AT** (Air Temperature)
+""")
 
 st.markdown("---")
 st.markdown("### 🎯 Predicted Output Maps")

@@ -4,15 +4,15 @@ import matplotlib.pyplot as plt
 import pickle
 
 # --- Load models and PCA ---
+import joblib
+
 @st.cache_resource
 def load_models():
     models = {}
     pcas = {}
     for name in ["MRT", "MagVel", "AT"]:
-        with open(f"{name}_rf_model.pkl", "rb") as f:
-            models[name] = pickle.load(f)
-        with open(f"{name}_pca.pkl", "rb") as f:
-            pcas[name] = pickle.load(f)
+        models[name] = joblib.load(f"{name}_rf_model.pkl")
+        pcas[name] = joblib.load(f"{name}_pca.pkl")
     return models, pcas
 
 rf_models, PCA_models = load_models()

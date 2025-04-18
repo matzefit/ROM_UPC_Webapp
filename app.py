@@ -1,13 +1,9 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
-import sklearn
-st.text(f"scikit-learn version: {sklearn.__version__}")
-
-# --- Load models and PCA ---
 import joblib
 
+# --- Load models and PCA ---
 @st.cache_resource
 def load_models():
     models = {}
@@ -19,35 +15,7 @@ def load_models():
 
 rf_models, PCA_models = load_models()
 
-# --- Streamlit UI ---
-st.title("Urban Microclimate Predictor 🌆")
-st.markdown("Adjust the inputs to predict **MRT**, **Velocity**, and **Air Temperature** maps.")
-
-import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
-import pickle
-import sklearn
-st.text(f"scikit-learn version: {sklearn.__version__}")
-
-# --- Load models and PCA ---
-import joblib
-
-@st.cache_resource
-def load_models():
-    models = {}
-    pcas = {}
-    for name in ["MRT", "MagVel", "AT"]:
-        models[name] = joblib.load(f"{name}_rf_model.pkl")
-        pcas[name] = joblib.load(f"{name}_pca.pkl")
-    return models, pcas
-
-rf_models, PCA_models = load_models()
-
-# --- Streamlit UI ---
-st.title("Urban Microclimate Predictor 🌆")
-st.markdown("Adjust the inputs to predict **MRT**, **Velocity**, and **Air Temperature** maps.")
-
+# --- Sidebar for inputs ---
 with st.sidebar:
     st.markdown("### 🌤 Input Parameters")
     hour = st.slider("Hour of Day", 1, 24, 12)
@@ -58,48 +26,31 @@ with st.sidebar:
 
 input_array = np.array([[hour, windspeed, winddir, solar, airtemp]])
 
-# --- Prediction ---
-st.subheader("Predicted Output Maps")
+# --- Main Title ---
+st.title("🌆 Urban Microclimate Predictor")
+st.markdown("This tool uses trained ML models to predict high-resolution spatial fields for:")
+st.markdown("- **MRT** (Mean Radiant Temperature)  
+- **MagVel** (Velocity Magnitude)  
+- **AT** (Air Temperature)")
 
-fig, axs = plt.subplots(1, 3, figsize=(20, 8))
+st.markdown("---")
+st.markdown("### 🎯 Predicted Output Maps")
 
-for i, target in enumerate(["MRT", "MagVel", "AT"]):
+# --- Predict and Plot each output (1 per row) ---
+for target in ["MRT", "MagVel", "AT"]:
     model = rf_models[target]
     pca = PCA_models[target]
 
+    # Predict + reshape
     pca_pred = model.predict(input_array)
     flat_img = pca.inverse_transform(pca_pred).reshape(-1)
     img = flat_img.reshape(1000, 1000)
-
     img[img == 0] = np.nan  # Mask buildings
 
-    im = axs[i].imshow(img, cmap="plasma" if target != "Error" else "coolwarm")
-    axs[i].set_title(f"**{target}** Prediction", fontsize=16)
-    axs[i].axis("off")
-    fig.colorbar(im, ax=axs[i], fraction=0.025, pad=0.02)
-
-st.pyplot(fig)
-
-input_array = np.array([[hour, windspeed, winddir, solar, airtemp]])
-
-# --- Prediction ---
-st.subheader("Predicted Output Maps")
-
-fig, axs = plt.subplots(1, 3, figsize=(18, 6))
-
-for i, target in enumerate(["MRT", "MagVel", "AT"]):
-    model = rf_models[target]
-    pca = PCA_models[target]
-
-    pca_pred = model.predict(input_array)
-    flat_img = pca.inverse_transform(pca_pred).reshape(-1)
-    img = flat_img.reshape(1000, 1000)
-
-    img[img == 0] = np.nan  # Mask buildings
-
-    im = axs[i].imshow(img, cmap="plasma" if target != "Error" else "coolwarm")
-    axs[i].set_title(f"{target} Prediction")
-    axs[i].axis("off")
-    fig.colorbar(im, ax=axs[i], fraction=0.025, pad=0.02)
-
-st.pyplot(fig)
+    # Plot
+    fig, ax = plt.subplots(figsize=(10, 10))
+    im = ax.imshow(img, cmap="jet")
+    ax.set_title(f"**{target}** Prediction", fontsize=18)
+    ax.axis("off")
+    fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
+    st.pyplot(fig)

@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import sklearn
+st.text(f"scikit-learn version: {sklearn.__version__}")
 
 # --- Load models and PCA ---
 import joblib
